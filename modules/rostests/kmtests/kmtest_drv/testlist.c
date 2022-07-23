@@ -125,7 +125,9 @@ const KMT_TEST TestList[] =
     { "KeIrql",                             Test_KeIrql },
     { "KeMutex",                            Test_KeMutex },
     { "-KeProcessor",                       Test_KeProcessor },
+#ifndef _M_AMD64 // Kernel crash
     { "KeSpinLock",                         Test_KeSpinLock },
+#endif
     { "KeTimer",                            Test_KeTimer },
     { "-KernelType",                        Test_KernelType },
     { "MmMdl",                              Test_MmMdl },
