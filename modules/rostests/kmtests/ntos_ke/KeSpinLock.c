@@ -340,10 +340,12 @@ START_TEST(KeSpinLock)
         { CheckLock,        DISPATCH_LEVEL, AcquireNormal,        ReleaseNormal,        NULL,           AcquireInt,            ReleaseInt,            NULL },
         { CheckLock,        SynchIrql,      AcquireSynch,         ReleaseNormal,        NULL,           NULL,                  NULL,                  NULL },
         { CheckQueueHandle, DISPATCH_LEVEL, AcquireInStackQueued, ReleaseInStackQueued, NULL,           AcquireInStackNoRaise, ReleaseInStackNoRaise, NULL },
+#ifndef _M_AMD64
         { CheckQueueHandle, SynchIrql,      AcquireInStackSynch,  ReleaseInStackQueued, NULL,           NULL,                  NULL,                  NULL },
         { CheckQueueHandle, DISPATCH_LEVEL, AcquireInStackQueued, ReleaseInStackQueued, NULL,           AcquireInStackForDpc,  ReleaseInStackForDpc,  NULL },
         { CheckQueue,       DISPATCH_LEVEL, AcquireQueued,        ReleaseQueued,        TryQueued,      NULL,                  NULL,                  NULL,       LockQueuePfnLock },
         { CheckQueue,       SynchIrql,      AcquireQueuedSynch,   ReleaseQueued,        TryQueuedSynch, NULL,                  NULL,                  NULL,       LockQueuePfnLock },
+#endif
     };
     int i, iIrql;
     PKPRCB Prcb;
@@ -379,6 +381,7 @@ START_TEST(KeSpinLock)
     /* on UP none of the following functions actually looks at the spinlock! */
     if (!KmtIsMultiProcessorBuild && !KmtIsCheckedBuild)
         pSpinLock = NULL;
+    ok(pSpinLock != NULL, "pSpinLock is NULL!\n");
 
     for (i = 0; i < sizeof TestData / sizeof TestData[0]; ++i)
     {
