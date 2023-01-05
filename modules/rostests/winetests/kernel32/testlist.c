@@ -64,9 +64,7 @@ const struct test winetest_testlist[] =
     { "module", func_module },
     { "path", func_path },
     { "pipe", func_pipe },
-#ifndef _M_AMD64
     { "process", func_process },
-#endif
     { "profile", func_profile },
     { "resource", func_resource },
     { "sync", func_sync },
