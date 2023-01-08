@@ -69,7 +69,9 @@ const struct test winetest_testlist[] =
     { "DM_REPOSITION", func_DM_REPOSITION },
     { "DrawIconEx", func_DrawIconEx },
     { "DrawText", func_DrawText },
+#ifndef _M_AMD64 // timeout
     { "desktop", func_desktop },
+#endif
     { "EmptyClipboard", func_EmptyClipboard },
     { "EnumDisplaySettings", func_EnumDisplaySettings },
     { "GetDCEx", func_GetDCEx },
