@@ -340,9 +340,9 @@ START_TEST(KeSpinLock)
         { CheckLock,        DISPATCH_LEVEL, AcquireNormal,        ReleaseNormal,        NULL,           AcquireInt,            ReleaseInt,            NULL },
         { CheckLock,        SynchIrql,      AcquireSynch,         ReleaseNormal,        NULL,           NULL,                  NULL,                  NULL },
         { CheckQueueHandle, DISPATCH_LEVEL, AcquireInStackQueued, ReleaseInStackQueued, NULL,           AcquireInStackNoRaise, ReleaseInStackNoRaise, NULL },
-#ifndef _M_AMD64
         { CheckQueueHandle, SynchIrql,      AcquireInStackSynch,  ReleaseInStackQueued, NULL,           NULL,                  NULL,                  NULL },
         { CheckQueueHandle, DISPATCH_LEVEL, AcquireInStackQueued, ReleaseInStackQueued, NULL,           AcquireInStackForDpc,  ReleaseInStackForDpc,  NULL },
+#ifndef _M_AMD64
         { CheckQueue,       DISPATCH_LEVEL, AcquireQueued,        ReleaseQueued,        TryQueued,      NULL,                  NULL,                  NULL,       LockQueuePfnLock },
         { CheckQueue,       SynchIrql,      AcquireQueuedSynch,   ReleaseQueued,        TryQueuedSynch, NULL,                  NULL,                  NULL,       LockQueuePfnLock },
 #endif
