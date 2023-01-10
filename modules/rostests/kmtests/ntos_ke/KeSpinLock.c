@@ -342,10 +342,11 @@ START_TEST(KeSpinLock)
         { CheckQueueHandle, DISPATCH_LEVEL, AcquireInStackQueued, ReleaseInStackQueued, NULL,           AcquireInStackNoRaise, ReleaseInStackNoRaise, NULL },
         { CheckQueueHandle, SynchIrql,      AcquireInStackSynch,  ReleaseInStackQueued, NULL,           NULL,                  NULL,                  NULL },
         { CheckQueueHandle, DISPATCH_LEVEL, AcquireInStackQueued, ReleaseInStackQueued, NULL,           AcquireInStackForDpc,  ReleaseInStackForDpc,  NULL },
-#ifndef _M_AMD64
+
         { CheckQueue,       DISPATCH_LEVEL, AcquireQueued,        ReleaseQueued,        TryQueued,      NULL,                  NULL,                  NULL,       LockQueuePfnLock },
-#endif
+#ifndef _M_AMD64
         { CheckQueue,       SynchIrql,      AcquireQueuedSynch,   ReleaseQueued,        TryQueuedSynch, NULL,                  NULL,                  NULL,       LockQueuePfnLock },
+#endif
     };
     int i, iIrql;
     PKPRCB Prcb;
