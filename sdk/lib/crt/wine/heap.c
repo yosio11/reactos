@@ -268,7 +268,7 @@ int CDECL _callnewh(MSVCRT_size_t size)
  */
 void* CDECL _expand(void* mem, MSVCRT_size_t size)
 {
-  return HeapReAlloc(heap, HEAP_REALLOC_IN_PLACE_ONLY, mem, size);
+  return msvcrt_heap_realloc(HEAP_REALLOC_IN_PLACE_ONLY, mem, size);
 }
 
 /*********************************************************************
@@ -424,7 +424,7 @@ void* CDECL MSVCRT_malloc(MSVCRT_size_t size)
 void* CDECL MSVCRT_realloc(void* ptr, MSVCRT_size_t size)
 {
   if (!ptr) return MSVCRT_malloc(size);
-  if (size) return HeapReAlloc(heap, 0, ptr, size);
+  if (size) return msvcrt_heap_realloc(0, ptr, size);
   MSVCRT_free(ptr);
   return NULL;
 }
