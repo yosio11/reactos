@@ -395,7 +395,7 @@ MSVCRT_size_t CDECL _msize(void* mem)
  */
 void* CDECL MSVCRT_calloc(MSVCRT_size_t count, MSVCRT_size_t size)
 {
-  return HeapAlloc( heap, HEAP_ZERO_MEMORY, count * size );
+  return msvcrt_heap_alloc(HEAP_ZERO_MEMORY, count*size);
 }
 
 /*********************************************************************
