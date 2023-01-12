@@ -194,7 +194,7 @@ void* CDECL MSVCRT_operator_new_dbg(MSVCRT_size_t size, int type, const char *fi
 void CDECL MSVCRT_operator_delete(void *mem)
 {
   TRACE("(%p)\n", mem);
-  HeapFree(heap, 0, mem);
+  msvcrt_heap_free(mem);
 }
 
 
@@ -373,7 +373,7 @@ int CDECL _heapadd(void* mem, MSVCRT_size_t size)
  */
 MSVCRT_intptr_t CDECL _get_heap_handle(void)
 {
-    return (MSVCRT_intptr_t)GetProcessHeap();
+    return (MSVCRT_intptr_t)heap;
 }
 
 /*********************************************************************
@@ -404,7 +404,7 @@ void* CDECL MSVCRT_calloc(MSVCRT_size_t count, MSVCRT_size_t size)
 void CDECL MSVCRT_free(void* ptr)
 {
   if(ptr == NULL) return;
-  HeapFree(heap,0,ptr);
+  msvcrt_heap_free(ptr);
 }
 
 /*********************************************************************
@@ -725,9 +725,7 @@ BOOL msvcrt_init_heap(void)
 
 void msvcrt_destroy_heap(void)
 {
-#ifndef __REACTOS__
     HeapDestroy(heap);
-#endif
     if(sb_heap)
         HeapDestroy(sb_heap);
 }
