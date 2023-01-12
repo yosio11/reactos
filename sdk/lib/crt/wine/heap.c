@@ -70,6 +70,8 @@ static unsigned int MSVCRT_amblksiz = 16;
 /* FIXME - According to documentation it should be 480 bytes, at runtime default is 0 */
 static MSVCRT_size_t MSVCRT_sbh_threshold = 0;
 
+#define static
+
 static void* msvcrt_heap_alloc(DWORD flags, MSVCRT_size_t size)
 {
     if(size < MSVCRT_sbh_threshold)
@@ -153,7 +155,7 @@ void* CDECL MSVCRT_operator_new(MSVCRT_size_t size)
 
   do
   {
-    retval = msvcrt_heap_alloc(0, size);
+    retval = HeapAlloc(GetProcessHeap(), 0, size);
     if(retval)
     {
       TRACE("(%ld) returning %p\n", size, retval);
@@ -192,7 +194,7 @@ void* CDECL MSVCRT_operator_new_dbg(MSVCRT_size_t size, int type, const char *fi
 void CDECL MSVCRT_operator_delete(void *mem)
 {
   TRACE("(%p)\n", mem);
-  msvcrt_heap_free(mem);
+  HeapFree(GetProcessHeap(), 0, mem);
 }
 
 
@@ -266,7 +268,7 @@ int CDECL _callnewh(MSVCRT_size_t size)
  */
 void* CDECL _expand(void* mem, MSVCRT_size_t size)
 {
-  return msvcrt_heap_realloc(HEAP_REALLOC_IN_PLACE_ONLY, mem, size);
+  return HeapReAlloc(GetProcessHeap(), HEAP_REALLOC_IN_PLACE_ONLY, mem, size);
 }
 
 /*********************************************************************
@@ -274,7 +276,7 @@ void* CDECL _expand(void* mem, MSVCRT_size_t size)
  */
 int CDECL _heapchk(void)
 {
-  if (!HeapValidate(heap, 0, NULL))
+  if (!HeapValidate( GetProcessHeap(), 0, NULL))
   {
     _dosmaperr(GetLastError());
     return MSVCRT__HEAPBADNODE;
@@ -287,7 +289,7 @@ int CDECL _heapchk(void)
  */
 int CDECL _heapmin(void)
 {
-  if (!HeapCompact( heap, 0 ))
+  if (!HeapCompact( GetProcessHeap(), 0 ))
   {
     if (GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
       _dosmaperr(GetLastError());
@@ -309,7 +311,7 @@ int CDECL _heapwalk(struct MSVCRT__heapinfo* next)
   phe.wFlags = next->_useflag == MSVCRT__USEDENTRY ? PROCESS_HEAP_ENTRY_BUSY : 0;
 
   if (phe.lpData && phe.wFlags & PROCESS_HEAP_ENTRY_BUSY &&
-      !HeapValidate( heap, 0, phe.lpData ))
+      !HeapValidate( GetProcessHeap(), 0, phe.lpData ))
   {
     UNLOCK_HEAP;
     _dosmaperr(GetLastError());
@@ -318,7 +320,7 @@ int CDECL _heapwalk(struct MSVCRT__heapinfo* next)
 
   do
   {
-    if (!HeapWalk( heap, &phe ))
+    if (!HeapWalk( GetProcessHeap(), &phe ))
     {
       UNLOCK_HEAP;
       if (GetLastError() == ERROR_NO_MORE_ITEMS)
@@ -371,7 +373,7 @@ int CDECL _heapadd(void* mem, MSVCRT_size_t size)
  */
 MSVCRT_intptr_t CDECL _get_heap_handle(void)
 {
-    return (MSVCRT_intptr_t)heap;
+    return (MSVCRT_intptr_t)GetProcessHeap();
 }
 
 /*********************************************************************
@@ -379,7 +381,7 @@ MSVCRT_intptr_t CDECL _get_heap_handle(void)
  */
 MSVCRT_size_t CDECL _msize(void* mem)
 {
-  MSVCRT_size_t size = msvcrt_heap_size(mem);
+  MSVCRT_size_t size = HeapSize(GetProcessHeap(),0,mem);
   if (size == ~(MSVCRT_size_t)0)
   {
     WARN(":Probably called with non wine-allocated memory, ret = -1\n");
@@ -393,7 +395,7 @@ MSVCRT_size_t CDECL _msize(void* mem)
  */
 void* CDECL MSVCRT_calloc(MSVCRT_size_t count, MSVCRT_size_t size)
 {
-  return msvcrt_heap_alloc(HEAP_ZERO_MEMORY, count*size);
+  return HeapAlloc( GetProcessHeap(), HEAP_ZERO_MEMORY, count * size );
 }
 
 /*********************************************************************
@@ -402,7 +404,7 @@ void* CDECL MSVCRT_calloc(MSVCRT_size_t count, MSVCRT_size_t size)
 void CDECL MSVCRT_free(void* ptr)
 {
   if(ptr == NULL) return;
-  msvcrt_heap_free(ptr);
+  HeapFree(GetProcessHeap(),0,ptr);
 }
 
 /*********************************************************************
@@ -410,7 +412,7 @@ void CDECL MSVCRT_free(void* ptr)
  */
 void* CDECL MSVCRT_malloc(MSVCRT_size_t size)
 {
-  void *ret = msvcrt_heap_alloc(0, size);
+  void *ret = HeapAlloc(GetProcessHeap(),0,size);
   if (!ret)
       *MSVCRT__errno() = MSVCRT_ENOMEM;
   return ret;
@@ -422,7 +424,7 @@ void* CDECL MSVCRT_malloc(MSVCRT_size_t size)
 void* CDECL MSVCRT_realloc(void* ptr, MSVCRT_size_t size)
 {
   if (!ptr) return MSVCRT_malloc(size);
-  if (size) return msvcrt_heap_realloc(0, ptr, size);
+  if (size) return HeapReAlloc(GetProcessHeap(), 0, ptr, size);
   MSVCRT_free(ptr);
   return NULL;
 }
@@ -713,13 +715,19 @@ int CDECL MSVCRT_strncpy_s(char *dest, MSVCRT_size_t numberOfElements,
 
 BOOL msvcrt_init_heap(void)
 {
+#ifdef __REACTOS__
+    heap = GetProcessHeap();
+#else
     heap = HeapCreate(0, 0, 0);
+#endif
     return heap != NULL;
 }
 
 void msvcrt_destroy_heap(void)
 {
+#ifndef __REACTOS__
     HeapDestroy(heap);
+#endif
     if(sb_heap)
         HeapDestroy(sb_heap);
 }
