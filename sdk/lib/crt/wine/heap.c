@@ -155,7 +155,7 @@ void* CDECL MSVCRT_operator_new(MSVCRT_size_t size)
 
   do
   {
-    retval = HeapAlloc(GetProcessHeap(), 0, size);
+    retval = HeapAlloc(heap, 0, size);
     if(retval)
     {
       TRACE("(%ld) returning %p\n", size, retval);
@@ -194,7 +194,7 @@ void* CDECL MSVCRT_operator_new_dbg(MSVCRT_size_t size, int type, const char *fi
 void CDECL MSVCRT_operator_delete(void *mem)
 {
   TRACE("(%p)\n", mem);
-  HeapFree(GetProcessHeap(), 0, mem);
+  HeapFree(heap, 0, mem);
 }
 
 
@@ -268,7 +268,7 @@ int CDECL _callnewh(MSVCRT_size_t size)
  */
 void* CDECL _expand(void* mem, MSVCRT_size_t size)
 {
-  return HeapReAlloc(GetProcessHeap(), HEAP_REALLOC_IN_PLACE_ONLY, mem, size);
+  return HeapReAlloc(heap, HEAP_REALLOC_IN_PLACE_ONLY, mem, size);
 }
 
 /*********************************************************************
@@ -276,7 +276,7 @@ void* CDECL _expand(void* mem, MSVCRT_size_t size)
  */
 int CDECL _heapchk(void)
 {
-  if (!HeapValidate( GetProcessHeap(), 0, NULL))
+  if (!HeapValidate(heap, 0, NULL))
   {
     _dosmaperr(GetLastError());
     return MSVCRT__HEAPBADNODE;
@@ -289,7 +289,7 @@ int CDECL _heapchk(void)
  */
 int CDECL _heapmin(void)
 {
-  if (!HeapCompact( GetProcessHeap(), 0 ))
+  if (!HeapCompact( heap, 0 ))
   {
     if (GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
       _dosmaperr(GetLastError());
@@ -311,7 +311,7 @@ int CDECL _heapwalk(struct MSVCRT__heapinfo* next)
   phe.wFlags = next->_useflag == MSVCRT__USEDENTRY ? PROCESS_HEAP_ENTRY_BUSY : 0;
 
   if (phe.lpData && phe.wFlags & PROCESS_HEAP_ENTRY_BUSY &&
-      !HeapValidate( GetProcessHeap(), 0, phe.lpData ))
+      !HeapValidate( heap, 0, phe.lpData ))
   {
     UNLOCK_HEAP;
     _dosmaperr(GetLastError());
@@ -320,7 +320,7 @@ int CDECL _heapwalk(struct MSVCRT__heapinfo* next)
 
   do
   {
-    if (!HeapWalk( GetProcessHeap(), &phe ))
+    if (!HeapWalk( heap, &phe ))
     {
       UNLOCK_HEAP;
       if (GetLastError() == ERROR_NO_MORE_ITEMS)
@@ -381,7 +381,7 @@ MSVCRT_intptr_t CDECL _get_heap_handle(void)
  */
 MSVCRT_size_t CDECL _msize(void* mem)
 {
-  MSVCRT_size_t size = HeapSize(GetProcessHeap(),0,mem);
+  MSVCRT_size_t size = HeapSize(heap,0,mem);
   if (size == ~(MSVCRT_size_t)0)
   {
     WARN(":Probably called with non wine-allocated memory, ret = -1\n");
@@ -395,7 +395,7 @@ MSVCRT_size_t CDECL _msize(void* mem)
  */
 void* CDECL MSVCRT_calloc(MSVCRT_size_t count, MSVCRT_size_t size)
 {
-  return HeapAlloc( GetProcessHeap(), HEAP_ZERO_MEMORY, count * size );
+  return HeapAlloc( heap, HEAP_ZERO_MEMORY, count * size );
 }
 
 /*********************************************************************
@@ -404,7 +404,7 @@ void* CDECL MSVCRT_calloc(MSVCRT_size_t count, MSVCRT_size_t size)
 void CDECL MSVCRT_free(void* ptr)
 {
   if(ptr == NULL) return;
-  HeapFree(GetProcessHeap(),0,ptr);
+  HeapFree(heap,0,ptr);
 }
 
 /*********************************************************************
@@ -412,7 +412,7 @@ void CDECL MSVCRT_free(void* ptr)
  */
 void* CDECL MSVCRT_malloc(MSVCRT_size_t size)
 {
-  void *ret = HeapAlloc(GetProcessHeap(),0,size);
+  void *ret = HeapAlloc(heap,0,size);
   if (!ret)
       *MSVCRT__errno() = MSVCRT_ENOMEM;
   return ret;
@@ -424,7 +424,7 @@ void* CDECL MSVCRT_malloc(MSVCRT_size_t size)
 void* CDECL MSVCRT_realloc(void* ptr, MSVCRT_size_t size)
 {
   if (!ptr) return MSVCRT_malloc(size);
-  if (size) return HeapReAlloc(GetProcessHeap(), 0, ptr, size);
+  if (size) return HeapReAlloc(heap, 0, ptr, size);
   MSVCRT_free(ptr);
   return NULL;
 }
