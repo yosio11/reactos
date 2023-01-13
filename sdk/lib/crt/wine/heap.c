@@ -158,7 +158,7 @@ void* CDECL MSVCRT_operator_new(MSVCRT_size_t size)
 
   do
   {
-    retval = HeapAlloc(heap, 0, size);
+    retval = msvcrt_heap_alloc(0, size);
     if(retval)
     {
       TRACE("(%ld) returning %p\n", size, retval);
