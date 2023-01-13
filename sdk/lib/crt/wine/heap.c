@@ -70,8 +70,6 @@ static unsigned int MSVCRT_amblksiz = 16;
 /* FIXME - According to documentation it should be 480 bytes, at runtime default is 0 */
 static MSVCRT_size_t MSVCRT_sbh_threshold = 0;
 
-#define static
-
 static void* msvcrt_heap_alloc(DWORD flags, MSVCRT_size_t size)
 {
     if(size < MSVCRT_sbh_threshold)
@@ -415,7 +413,7 @@ void CDECL MSVCRT_free(void* ptr)
  */
 void* CDECL MSVCRT_malloc(MSVCRT_size_t size)
 {
-  void *ret = HeapAlloc(heap,0,size);
+  void *ret = msvcrt_heap_alloc(0, size);
   if (!ret)
       *MSVCRT__errno() = MSVCRT_ENOMEM;
   return ret;
