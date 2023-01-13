@@ -86,7 +86,7 @@ static void* msvcrt_heap_alloc(DWORD flags, MSVCRT_size_t size)
         *saved = temp;
         return memblock;
     }
-
+    if (heap != GetProcessHeap()) ERR("heap is %p\n", heap);
     return HeapAlloc(heap, flags, size);
 }
 
@@ -94,6 +94,7 @@ static void* msvcrt_heap_realloc(DWORD flags, void *ptr, MSVCRT_size_t size)
 {
     if(sb_heap && ptr && !HeapValidate(heap, 0, ptr))
     {
+        ERR("sb_heap!\n");
         /* TODO: move data to normal heap if it exceeds sbh_threshold limit */
         void *memblock, *temp, **saved;
         MSVCRT_size_t old_padding, new_padding, old_size;
@@ -118,7 +119,7 @@ static void* msvcrt_heap_realloc(DWORD flags, void *ptr, MSVCRT_size_t size)
         *saved = temp;
         return memblock;
     }
-
+    if (heap != GetProcessHeap()) ERR("heap is %p\n", heap);
     return HeapReAlloc(heap, flags, ptr, size);
 }
 
@@ -126,10 +127,11 @@ static BOOL msvcrt_heap_free(void *ptr)
 {
     if(sb_heap && ptr && !HeapValidate(heap, 0, ptr))
     {
+        ERR("sb_heap!\n");
         void **saved = SAVED_PTR(ptr);
         return HeapFree(sb_heap, 0, *saved);
     }
-
+    if (heap != GetProcessHeap()) ERR("heap is %p\n", heap);
     return HeapFree(heap, 0, ptr);
 }
 
@@ -137,10 +139,11 @@ static MSVCRT_size_t msvcrt_heap_size(void *ptr)
 {
     if(sb_heap && ptr && !HeapValidate(heap, 0, ptr))
     {
+        ERR("sb_heap!\n");
         void **saved = SAVED_PTR(ptr);
         return HeapSize(sb_heap, 0, *saved);
     }
-
+    if (heap != GetProcessHeap()) ERR("heap is %p\n", heap);
     return HeapSize(heap, 0, ptr);
 }
 
